@@ -116,11 +116,11 @@ const useGardenSetup = () => {
       const orderbook = await Orderbook.init({
         url: "http://localhost:8080",
         signer: signer,
-        opts: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          domain: (window as any).location.host,
-          store: localStorage,
-        },
+        // opts: {
+        //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //   domain: (window as any).location.host,
+        //   store: localStorage,
+        // },
       });
 
       const wallets = {

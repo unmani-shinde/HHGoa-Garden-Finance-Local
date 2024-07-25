@@ -58,7 +58,7 @@ export function Stepper() {
         <>
             <ol className="flex items-center flex-row justify-center w-full p-3 space-x-2 text-sm font-medium text-center text-gray-500 dark:text-gray-400 sm:text-base sm:p-4 sm:space-x-4 rtl:space-x-reverse">
                 {stepperOptions.map((option, index) => {
-                    if (option.label === 2 && account.chainId !== 11155111) {
+                    if (option.label === 2 && account.chainId !== 31337) {
                         // Do not render the "Wrapped Tokens Import" option if the selected chain is not Sepolia
                         return null;
                     }

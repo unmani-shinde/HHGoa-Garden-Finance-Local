@@ -138,7 +138,7 @@ const Swap: React.FC<SwapAndAddressComponentProps> = ({
   amount,
   changeAmount,
 }) => {
-  const { garden, bitcoin } = useGarden();
+  const { garden, bitcoin} = useGarden();
   const [btcAddress, setBtcAddress] = useState<string>();
   const { metaMaskIsConnected } = useMetaMaskStore();
   const { wbtcAmount, btcAmount } = amount;

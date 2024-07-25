@@ -1,15 +1,15 @@
 import {createConfig, http } from "wagmi";
-import { core } from "./customChains";
+import { core,local } from "./customChains";
 import { sepolia} from "wagmi/chains";
 import { QueryClient} from "@tanstack/react-query";
 import { getDefaultConfig } from "connectkit";
 
 export const config = createConfig(
   getDefaultConfig({
-    chains: [sepolia,core],
+    chains: [local],
     transports: {
-      [sepolia.id]:http(),
-      [core.id]: http(),
+      [local.id]:http(),
+      // [core.id]: http(),
     },
     
     walletConnectProjectId: 'a9fdc841635ffa2c5fe7d18174a050b7',

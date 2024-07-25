@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMetaMaskStore, useGarden, useSignStore } from "./store";
 import { Assets } from "@gardenfi/orderbook";
 import React from "react";
+import { useAccount } from "wagmi";
 
 type AmountState = {
   btcAmount: string | null;
@@ -14,16 +15,17 @@ const ReverseSwapComponent: React.FC = () => {
     wbtcAmount: null,
   });
 
-  const changeAmount = (of: "WBTC" | "BTC", value: string) => {
-    if (of === "WBTC") {
-      handleWBTCChange(value);
+  const changeAmount = (of: "BTC" | "WBTC", value: string) => {
+    if (of === "BTC") {
+      handleBTCChange(value);
     }
   };
-  const handleWBTCChange = (value: string) => {
-    const newAmount: AmountState = { wbtcAmount: value, btcAmount: null };
+
+  const handleBTCChange = (value: string) => {
+    const newAmount: AmountState = { btcAmount: value, wbtcAmount: null };
     if (Number(value) > 0) {
-      const btcAmount = (1 - 0.3 / 100) * Number(value);
-      newAmount.btcAmount = btcAmount.toFixed(8).toString();
+      const wbtcAmount = (Number(value) * (1 - 0.3 / 100));
+      newAmount.wbtcAmount = wbtcAmount.toFixed(8).toString();
     }
     setAmount(newAmount);
   };
@@ -76,24 +78,24 @@ const MetaMaskButton: React.FC<MetaMaskButtonProps> = ({
 
 type TransactionAmountComponentProps = {
   amount: AmountState;
-  changeAmount: (of: "WBTC" | "BTC", value: string) => void;
+  changeAmount: (of: "BTC" | "WBTC", value: string) => void;
 };
 
 const SwapAmount: React.FC<TransactionAmountComponentProps> = ({
   amount,
   changeAmount,
 }) => {
-  const { wbtcAmount, btcAmount } = amount;
+  const { btcAmount, wbtcAmount } = amount;
 
   return (
     <div className="swap-component-middle-section">
       <InputField
-        id="wbtc"
-        label="Send WBTC"
-        value={wbtcAmount}
-        onChange={(value) => changeAmount("WBTC", value)}
+        id="btc"
+        label="Send BTC"
+        value={btcAmount}
+        onChange={(value) => changeAmount("BTC", value)}
       />
-      <InputField id="btc" label="Receive BTC" value={btcAmount} readOnly />
+      <InputField id="wbtc" label="Receive WBTC" value={wbtcAmount} readOnly />
     </div>
   );
 };
@@ -119,7 +121,7 @@ const InputField: React.FC<InputFieldProps> = ({
       <input
         id={id}
         placeholder="0"
-        value={value ? value : ""}
+        value={value || ""}
         type="number"
         readOnly={readOnly}
         onChange={(e) => onChange && onChange(e.target.value)}
@@ -131,7 +133,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
 type SwapAndAddressComponentProps = {
   amount: AmountState;
-  changeAmount: (of: "WBTC" | "BTC", value: string) => void;
+  changeAmount: (of: "BTC" | "WBTC", value: string) => void;
 };
 
 const Swap: React.FC<SwapAndAddressComponentProps> = ({
@@ -141,7 +143,8 @@ const Swap: React.FC<SwapAndAddressComponentProps> = ({
   const { garden, bitcoin } = useGarden();
   const [btcAddress, setBtcAddress] = useState<string>();
   const { metaMaskIsConnected } = useMetaMaskStore();
-  const { wbtcAmount, btcAmount } = amount;
+  const { btcAmount, wbtcAmount } = amount;
+  const account = useAccount();
 
   const { isSigned } = useSignStore();
 
@@ -159,21 +162,21 @@ const Swap: React.FC<SwapAndAddressComponentProps> = ({
   const handleSwap = async () => {
     if (
       !garden ||
-      typeof Number(wbtcAmount) !== "number" ||
-      typeof Number(btcAmount) !== "number"
+      typeof Number(btcAmount) !== "number" ||
+      typeof Number(wbtcAmount) !== "number"
     )
       return;
 
-    const sendAmount = Number(wbtcAmount) * 1e8;
-    const recieveAmount = Number(btcAmount) * 1e8;
+    const sendAmount = Number(btcAmount) * 1e8; // Convert to satoshis
+    const receiveAmount = Number(wbtcAmount) * 1e8; // Convert to satoshis
 
-    changeAmount("WBTC", "");
+    changeAmount("BTC", "");
 
     await garden.swap(
-      Assets.ethereum_localnet.WBTC,
       Assets.bitcoin_regtest.BTC,
+      Assets.ethereum_localnet.WBTC,
       sendAmount,
-      recieveAmount
+      receiveAmount
     );
   };
 
@@ -184,9 +187,9 @@ const Swap: React.FC<SwapAndAddressComponentProps> = ({
         <div className="input-component">
           <input
             id="receive-address"
-            placeholder="Enter BTC Address"
-            value={btcAddress ? btcAddress : ""}
-            onChange={(e) => setBtcAddress(e.target.value)}
+            placeholder="Enter WBTC Address"
+            value={account.address || ""}
+            readOnly
           />
         </div>
       </div>
